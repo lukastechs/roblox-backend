@@ -137,10 +137,8 @@ app.post('/api/roblox/:username', async (req, res) => {
       age_days: userInfo.created ? calculateAgeDays(userInfo.created) : 0,
       followers: followers || 0,
       followings: followings || 0,
-      verified: userInfo.hasVerifiedBadge ? 'Yes' : 'No',
-      verified_type: 'N/A', // Roblox doesn't have types like X
+      verified: userInfo.hasVerifiedBadge || false,
       description: userInfo.description || 'N/A',
-      region: 'N/A', // Roblox doesn't expose location publicly
       user_id: userId,
       avatar: avatarUrl,
       previous_usernames: previousUsernames,
@@ -236,10 +234,8 @@ app.get('/api/roblox/:username', async (req, res) => {
       age_days: userInfo.created ? calculateAgeDays(userInfo.created) : 0,
       followers: followers || 0,
       followings: followings || 0,
-      verified: userInfo.hasVerifiedBadge ? 'Yes' : 'No',
-      verified_type: 'N/A',
+      verified: userInfo.hasVerifiedBadge || false,
       description: userInfo.description || 'N/A',
-      region: 'N/A',
       user_id: userId,
       avatar: avatarUrl,
       previous_usernames: previousUsernames,
