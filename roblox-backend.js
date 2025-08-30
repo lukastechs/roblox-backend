@@ -33,25 +33,9 @@ app.get('/', (req, res) => {
   res.send('Roblox Account Age Checker API is running');
 });
 
-// Roblox age checker endpoint (POST for frontend with reCAPTCHA)
+// Roblox age checker endpoint (POST for frontend, no reCAPTCHA)
 app.post('/api/roblox/:username', async (req, res) => {
   try {
-    // Verify reCAPTCHA
-    const recaptchaResponse = req.body.recaptcha;
-    if (!recaptchaResponse) {
-      return res.status(400).json({ error: 'reCAPTCHA required' });
-    }
-    const recaptchaVerify = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      new URLSearchParams({
-        secret: process.env.RECAPTCHA_SECRET_KEY,
-        response: recaptchaResponse,
-      })
-    );
-    if (!recaptchaVerify.data.success) {
-      return res.status(400).json({ error: 'reCAPTCHA verification failed' });
-    }
-
     const username = req.params.username;
     // Get user ID and basic info from username
     const userSearch = await axios.post('https://users.roblox.com/v1/usernames/users', {
@@ -179,7 +163,7 @@ app.post('/api/roblox/:username', async (req, res) => {
 app.get('/api/roblox/:username', async (req, res) => {
   try {
     const username = req.params.username;
-    // Same logic as POST, without reCAPTCHA
+    // Same logic as POST
     const userSearch = await axios.post('https://users.roblox.com/v1/usernames/users', {
       usernames: [username],
       excludeBannedUsers: false
