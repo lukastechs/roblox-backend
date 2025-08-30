@@ -75,6 +75,24 @@ app.post('/api/roblox/:username', async (req, res) => {
     const followingsRes = await axios.get(`https://friends.roblox.com/v1/users/${userId}/followings/count`);
     const followings = followingsRes.data.count;
 
+    // Friends count
+    let friends = 0;
+    try {
+      const friendsRes = await axios.get(`https://friends.roblox.com/v1/users/${userId}/friends/count`);
+      friends = friendsRes.data.count;
+    } catch (e) {
+      console.error('Friends count error:', e.message);
+    }
+
+    // Groups count
+    let groups_count = 0;
+    try {
+      const groupsRes = await axios.get(`https://groups.roblox.com/v1/users/${userId}/groups/roles`);
+      groups_count = groupsRes.data.data.length;
+    } catch (e) {
+      console.error('Groups count error:', e.message);
+    }
+
     // Avatar URL (full body avatar)
     let avatarUrl = 'https://via.placeholder.com/150';
     try {
@@ -84,14 +102,11 @@ app.post('/api/roblox/:username', async (req, res) => {
       console.error('Avatar fetch error:', e.message);
     }
 
-    // Username history
+    // Username history (only names, as API does not provide dates)
     let previousUsernames = [];
     try {
       const historyRes = await axios.get(`https://users.roblox.com/v1/users/${userId}/username-history?limit=10&sortOrder=Asc`);
-      previousUsernames = historyRes.data.data.map(h => ({
-        name: h.name,
-        created: new Date(h.created).toLocaleDateString()
-      }));
+      previousUsernames = historyRes.data.data.map(h => h.name);
     } catch (e) {
       console.error('Username history error:', e.message);
     }
@@ -128,6 +143,9 @@ app.post('/api/roblox/:username', async (req, res) => {
       console.error('Presence error:', e.message);
     }
 
+    // Profile link
+    const profile_link = `https://www.roblox.com/users/${userId}/profile`;
+
     // Compile response
     res.json({
       username: basicUser.name || username,
@@ -137,13 +155,16 @@ app.post('/api/roblox/:username', async (req, res) => {
       age_days: userInfo.created ? calculateAgeDays(userInfo.created) : 0,
       followers: followers || 0,
       followings: followings || 0,
+      friends: friends || 0,
+      groups_count: groups_count || 0,
       verified: userInfo.hasVerifiedBadge || false,
       description: userInfo.description || 'N/A',
       user_id: userId,
       avatar: avatarUrl,
       previous_usernames: previousUsernames,
       active_status: activeStatus,
-      online_status: onlineStatus
+      online_status: onlineStatus,
+      profile_link: profile_link
     });
   } catch (error) {
     console.error('Roblox API Error:', error.response?.data || error.message);
@@ -177,6 +198,22 @@ app.get('/api/roblox/:username', async (req, res) => {
     const followingsRes = await axios.get(`https://friends.roblox.com/v1/users/${userId}/followings/count`);
     const followings = followingsRes.data.count;
 
+    let friends = 0;
+    try {
+      const friendsRes = await axios.get(`https://friends.roblox.com/v1/users/${userId}/friends/count`);
+      friends = friendsRes.data.count;
+    } catch (e) {
+      console.error('Friends count error:', e.message);
+    }
+
+    let groups_count = 0;
+    try {
+      const groupsRes = await axios.get(`https://groups.roblox.com/v1/users/${userId}/groups/roles`);
+      groups_count = groupsRes.data.data.length;
+    } catch (e) {
+      console.error('Groups count error:', e.message);
+    }
+
     let avatarUrl = 'https://via.placeholder.com/150';
     try {
       const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
@@ -188,10 +225,7 @@ app.get('/api/roblox/:username', async (req, res) => {
     let previousUsernames = [];
     try {
       const historyRes = await axios.get(`https://users.roblox.com/v1/users/${userId}/username-history?limit=10&sortOrder=Asc`);
-      previousUsernames = historyRes.data.data.map(h => ({
-        name: h.name,
-        created: new Date(h.created).toLocaleDateString()
-      }));
+      previousUsernames = historyRes.data.data.map(h => h.name);
     } catch (e) {
       console.error('Username history error:', e.message);
     }
@@ -226,6 +260,8 @@ app.get('/api/roblox/:username', async (req, res) => {
       console.error('Presence error:', e.message);
     }
 
+    const profile_link = `https://www.roblox.com/users/${userId}/profile`;
+
     res.json({
       username: basicUser.name || username,
       display_name: basicUser.displayName || 'N/A',
@@ -234,13 +270,16 @@ app.get('/api/roblox/:username', async (req, res) => {
       age_days: userInfo.created ? calculateAgeDays(userInfo.created) : 0,
       followers: followers || 0,
       followings: followings || 0,
+      friends: friends || 0,
+      groups_count: groups_count || 0,
       verified: userInfo.hasVerifiedBadge || false,
       description: userInfo.description || 'N/A',
       user_id: userId,
       avatar: avatarUrl,
       previous_usernames: previousUsernames,
       active_status: activeStatus,
-      online_status: onlineStatus
+      online_status: onlineStatus,
+      profile_link: profile_link
     });
   } catch (error) {
     console.error('Roblox API Error:', error.response?.data || error.message);
